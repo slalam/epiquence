@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@@EPIQ_species@@@@EPIQ_title_scope@@ | surveillance tree</title>
+<style>
+  body { margin:0; padding:16px; background:#f4f4f4;
+         font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#333; }
+  .epiq-wrap { max-width:1600px; margin:0 auto; }
+  .epiq-head { background:#fff; border:1px solid #e0e0e0; border-radius:4px;
+               padding:14px 18px; margin-bottom:10px; }
+  .epiq-title { font-size:17px; font-weight:600; color:#2c3e50; font-style:italic; }
+  .epiq-scope { margin-top:2px; font-size:12px; color:#3d6b5e; font-weight:600; }
+  .epiq-meta { margin-top:6px; font-size:11px; color:#888; display:flex;
+               flex-wrap:wrap; gap:16px; font-style:normal; }
+  .epiq-meta b { color:#4e79a7; font-weight:600; }
+  .epiq-warn { margin-top:8px; font-size:11px; color:#a8590c; line-height:1.5;
+               background:#fdf6ec; border-left:3px solid #e8a33d; padding:6px 10px; }
+</style>
+</head>
+<body>
+<div class="epiq-wrap">
+  <div class="epiq-head">
+    <div class="epiq-title">@@EPIQ_species@@</div>@@EPIQ_scope_html@@
+    <div class="epiq-meta">
+      <span><b>@@EPIQ_n_isolates@@</b> isolates</span>
+      <span><b>@@EPIQ_n_runs@@</b> runs</span>
+      <span>generated <b>@@EPIQ_generated@@</b></span>
+    </div>@@EPIQ_cap_warning@@
+  </div>
+<div id="@@EPIQ_div_id@@" style="width:100%;height:@@EPIQ_h@@px;position:relative;background:#fafafa;border:1px solid #e0e0e0;border-radius:4px;margin:8px 0;overflow:hidden;">
+      <div style="position:absolute;top:8px;left:8px;z-index:10;display:flex;align-items:center;gap:10px;">
+        <select id="@@EPIQ_div_id@@_colorby"
+          style="font-size:11px;font-family:Inter,sans-serif;padding:4px 10px;border-radius:6px;border:1px solid #ccc;background:#fff;color:#555;cursor:pointer;outline:none;">
+          <option value="MLST">Color by: MLST</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #ccc;border-radius:6px;padding:3px 10px;">
+          <span style="font-size:10px;font-family:Inter,sans-serif;color:#888;white-space:nowrap;">Collapse Threshold</span>
+          <input id="@@EPIQ_div_id@@_threshold" type="range" min="0" max="@@EPIQ_snp_cap@@" value="@@EPIQ_init_threshold@@"
+            style="width:90px;height:4px;cursor:pointer;accent-color:#4e79a7;">
+          <span id="@@EPIQ_div_id@@_tval" style="font-size:11px;font-weight:600;color:#4e79a7;min-width:20px;font-family:Inter,sans-serif;">@@EPIQ_init_threshold@@</span>
+          <span style="font-size:10px;color:#888;font-family:Inter,sans-serif;">distance</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #ccc;border-radius:6px;padding:3px 10px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.5"
+               stroke-linecap="round" style="flex:none;"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>
+          <input id="@@EPIQ_div_id@@_search" type="text" placeholder="Find isolate" autocomplete="off"
+            style="width:130px;font-size:11px;font-family:Inter,sans-serif;border:none;outline:none;color:#333;background:transparent;">
+          <span id="@@EPIQ_div_id@@_searchstat"
+            style="font-size:10px;font-family:Inter,sans-serif;color:#888;white-space:nowrap;"></span>
+        </div>
+      </div>
+      <div style="position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px;">
+        <button id="@@EPIQ_div_id@@_zin" title="Zoom in"
+          style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:#f0f0f0;color:#555;border:1px solid #ddd;cursor:pointer;padding:0;font-size:16px;font-weight:700;line-height:1;"
+          onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">+</button>
+        <button id="@@EPIQ_div_id@@_zout" title="Zoom out"
+          style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:#f0f0f0;color:#555;border:1px solid #ddd;cursor:pointer;padding:0;font-size:16px;font-weight:700;line-height:1;"
+          onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">&minus;</button>
+        <button id="@@EPIQ_div_id@@_zreset" title="Reset view"
+          style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:#f0f0f0;color:#555;border:1px solid #ddd;cursor:pointer;padding:0;"
+          onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 1 3 7"/><polyline points="3 22 3 16 9 16"/>
+          </svg>
+        </button>
+        <button id="@@EPIQ_div_id@@_dl" title="Download MST as SVG"
+          style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:#f0f0f0;color:#555;border:1px solid #ddd;cursor:pointer;padding:0;"
+          onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script>
+    (function() {
+      var allSamples = @@EPIQ_samples_json@@;
+      var mstEdges = @@EPIQ_edges_json@@;
+      // Flat [i, j, snps, ...] triples for every pair at or below SNP_CAP.
+      var pairsFlat = @@EPIQ_pairs_json@@;
+      var SNP_CAP = @@EPIQ_snp_cap@@;
+      var N = allSamples.length;
+      var container = d3.select("#@@EPIQ_div_id@@");
+      var width = container.node().getBoundingClientRect().width || 700;
+      var height = @@EPIQ_h@@;
+
+      // Numeric-keyed lookup built once; i<j canonical ordering.
+      var pairMap = new Map();
+      for (var _p = 0; _p < pairsFlat.length; _p += 3) {
+        pairMap.set(pairsFlat[_p] * N + pairsFlat[_p + 1], pairsFlat[_p + 2]);
+      }
+
+      // Infinity means "further apart than SNP_CAP", not "unknown".
+      function dist(i, j) {
+        if (i === j) return 0;
+        var a = i < j ? i : j, b = i < j ? j : i;
+        var v = pairMap.get(a * N + b);
+        return v === undefined ? Infinity : v;
+      }
+
+      var palette = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
+                     '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac'];
+      var defaultColor = '#8e8e8e';
+      var currentField = "MLST";
+
+      var colorByFields = @@EPIQ_color_fields_json@@;
+      var selectEl = document.getElementById("@@EPIQ_div_id@@_colorby");
+      colorByFields.forEach(function(f) {
+        if (f !== "MLST") {
+          var opt = document.createElement("option");
+          opt.value = f; opt.text = "Color by: " + f;
+          selectEl.appendChild(opt);
+        }
+      });
+
+      function getMemberColorValue(m, field) {
+        if (field === "MLST") return m.st || "";
+        if (field === "Chromosomal AMR") return m.amr || "";
+        return (m.metaFields || {})[field] || "";
+      }
+
+      function buildColorMap(field) {
+        var vals = {};
+        allSamples.forEach(function(m) {
+          var v = getMemberColorValue(m, field);
+          if (v) vals[v] = true;
+        });
+        var sorted = Object.keys(vals).sort();
+        var cmap = {};
+        sorted.forEach(function(v, i) { cmap[v] = palette[i % palette.length]; });
+        cmap[""] = defaultColor;
+        return cmap;
+      }
+
+      var colorMap = buildColorMap(currentField);
+
+      function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+      // --- Core: group samples by threshold using single-linkage clustering ---
+      function buildGroups(threshold) {
+        // Union-Find for single-linkage clustering
+        var parent = [];
+        for (var i = 0; i < N; i++) parent.push(i);
+
+        function find(x) {
+          while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+          return x;
+        }
+        function union(a, b) {
+          var ra = find(a), rb = find(b);
+          if (ra !== rb) parent[ra] = rb;
+        }
+
+        // Merge any pair within threshold.
+        for (var p = 0; p < pairsFlat.length; p += 3) {
+          if (pairsFlat[p + 2] <= threshold) union(pairsFlat[p], pairsFlat[p + 1]);
+        }
+
+        var groupMap = {};
+        for (var i = 0; i < N; i++) {
+          var r = find(i);
+          if (!(r in groupMap)) groupMap[r] = [];
+          groupMap[r].push(i);
+        }
+
+        return Object.values(groupMap);
+      }
+
+      function buildSuperGraph(groups) {
+        var ng = groups.length;
+        var sampleToGroup = {};
+        groups.forEach(function(g, gi) { g.forEach(function(idx) { sampleToGroup[idx] = gi; }); });
+
+        // Find min distance between groups using MST edges
+        var groupEdgeMin = {};
+        var groupEdgePair = {};  // key -> [sampleIdA, sampleIdB]
+        mstEdges.forEach(function(e) {
+          var gi = sampleToGroup[e.source], gj = sampleToGroup[e.target];
+          if (gi !== gj) {
+            var key = Math.min(gi,gj) + "_" + Math.max(gi,gj);
+            if (!(key in groupEdgeMin) || e.snps < groupEdgeMin[key]) {
+              groupEdgeMin[key] = e.snps;
+              groupEdgePair[key] = [e.source, e.target];
+            }
+          }
+        });
+
+        // Refine using shipped pairs only.
+        for (var p = 0; p < pairsFlat.length; p += 3) {
+          var si = pairsFlat[p], sj = pairsFlat[p + 1], sd = pairsFlat[p + 2];
+          var gsi = sampleToGroup[si], gsj = sampleToGroup[sj];
+          if (gsi === gsj) continue;
+          var skey = Math.min(gsi, gsj) + "_" + Math.max(gsi, gsj);
+          if (!(skey in groupEdgeMin) || sd < groupEdgeMin[skey]) {
+            groupEdgeMin[skey] = sd;
+            groupEdgePair[skey] = [si, sj];
+          }
+        }
+
+        // Build group MST using Prim's algorithm
+        if (ng <= 1) return { nodes: buildSuperNodes(groups), edges: [] };
+
+        var inMST = [true];
+        for (var _i = 1; _i < ng; _i++) inMST.push(false);
+        var mstCount = 1;
+        var gEdges = [];
+
+        while (mstCount < ng) {
+          var bestEdge = null, bestDist = Infinity;
+          for (var gi = 0; gi < ng; gi++) {
+            if (!inMST[gi]) continue;
+            for (var gj = 0; gj < ng; gj++) {
+              if (inMST[gj]) continue;
+              var key = Math.min(gi, gj) + "_" + Math.max(gi, gj);
+              var d = groupEdgeMin[key];
+              if (d !== undefined && d < bestDist) {
+                bestDist = d;
+                var pair = groupEdgePair[key] || [];
+                bestEdge = {
+                  source: gi, target: gj, snps: Math.round(d),
+                  bridgeFrom: allSamples[pair[0]] ? allSamples[pair[0]].name : "",
+                  bridgeTo: allSamples[pair[1]] ? allSamples[pair[1]].name : ""
+                };
+              }
+            }
+          }
+          if (!bestEdge) break;
+          inMST[bestEdge.target] = true;
+          mstCount++;
+          gEdges.push(bestEdge);
+        }
+
+        return { nodes: buildSuperNodes(groups), edges: gEdges };
+      }
+
+      function buildSuperNodes(groups) {
+        return groups.map(function(group, gi) {
+          var members = group.map(function(idx) { return allSamples[idx]; });
+          return {
+            id: gi, count: group.length,
+            st: members[0].st, amr: members[0].amr,
+            members: members,
+            label: members[0].name,
+            countLabel: group.length > 1 ? "[+" + (group.length - 1) + " samples]" : ""
+          };
+        });
+      }
+
+      // --- Layout: radial tree on super-graph ---
+      function computeLayout(superGraph) {
+        var nodes = superGraph.nodes, edges = superGraph.edges;
+        var ng = nodes.length;
+        if (ng === 0) return;
+        if (ng === 1) { nodes[0].x = width / 2; nodes[0].y = height / 2; return; }
+
+        var adj = {};
+        nodes.forEach(function(n) { adj[n.id] = []; });
+        edges.forEach(function(e) {
+          adj[e.source].push({ to: e.target, snps: e.snps });
+          adj[e.target].push({ to: e.source, snps: e.snps });
+        });
+
+        // Root = largest group
+        var root = 0;
+        nodes.forEach(function(n) { if (n.count > nodes[root].count) root = n.id; });
+
+        var children = {}, edgeDist = {}, visited = new Set([root]), queue = [root], order = [root];
+        nodes.forEach(function(n) { children[n.id] = []; });
+        while (queue.length) {
+          var nd = queue.shift();
+          adj[nd].forEach(function(nb) {
+            if (!visited.has(nb.to)) {
+              visited.add(nb.to);
+              children[nd].push(nb.to);
+              edgeDist[nd + "_" + nb.to] = nb.snps;
+              queue.push(nb.to);
+              order.push(nb.to);
+            }
+          });
+        }
+
+        var subSize = {};
+        for (var i = order.length - 1; i >= 0; i--) {
+          var nd = order[i];
+          subSize[nd] = 1;
+          children[nd].forEach(function(c) { subSize[nd] += subSize[c]; });
+        }
+
+        function edgeLen(snps) { return snps === 0 ? 40 : Math.max(60, 50 + Math.log(snps + 1) * 40); }
+
+        var pos = {};
+        function layoutSub(nd, aStart, aEnd, radius) {
+          var aMid = (aStart + aEnd) / 2;
+          pos[nd] = [radius * Math.cos(aMid), radius * Math.sin(aMid)];
+          var kids = children[nd];
+          if (!kids.length) return;
+          var total = 0;
+          kids.forEach(function(c) { total += subSize[c]; });
+          var cursor = aStart;
+          kids.sort(function(a, b) {
+            var da = edgeDist[nd + "_" + a] || 0, db = edgeDist[nd + "_" + b] || 0;
+            return da - db || subSize[b] - subSize[a];
+          });
+          kids.forEach(function(c) {
+            var frac = subSize[c] / total;
+            var ca = (aEnd - aStart) * frac;
+            var snps = edgeDist[nd + "_" + c] || 0;
+            layoutSub(c, cursor, cursor + ca, radius + edgeLen(snps));
+            cursor += ca;
+          });
+        }
+        layoutSub(root, 0, 2 * Math.PI, 0);
+
+        var xs = Object.values(pos).map(function(p) { return p[0]; });
+        var ys = Object.values(pos).map(function(p) { return p[1]; });
+        var cx = (Math.max.apply(null, xs) + Math.min.apply(null, xs)) / 2;
+        var cy = (Math.max.apply(null, ys) + Math.min.apply(null, ys)) / 2;
+        nodes.forEach(function(n) {
+          n.x = pos[n.id][0] - cx + width / 2;
+          n.y = pos[n.id][1] - cy + height / 2;
+        });
+      }
+
+      var svg = container.append("svg")
+        .attr("width", width).attr("height", height)
+        .attr("xmlns", "http://www.w3.org/2000/svg");
+
+      var g = svg.append("g");
+
+      var zoom = d3.zoom()
+        .scaleExtent([0.2, 5])
+        .on("zoom", function(e) { g.attr("transform", e.transform); });
+      svg.call(zoom);
+
+      var tooltip = container.append("div")
+        .style("position", "absolute").style("display", "none")
+        .style("background", "rgba(255,255,255,0.97)").style("border", "1px solid #ccc")
+        .style("border-radius", "4px").style("padding", "8px 10px")
+        .style("font-size", "11px").style("font-family", "Inter, sans-serif")
+        .style("box-shadow", "0 2px 8px rgba(0,0,0,0.12)")
+        .style("pointer-events", "none").style("z-index", "10")
+        .style("max-width", "360px").style("line-height", "1.5");
+
+      function nodeRadius(d) { return d.count === 1 ? 10 : 8 + Math.sqrt(d.count) * 6; }
+
+      var legendG = svg.append("g").attr("class", "mst-legend").attr("transform", "translate(10, 50)")
+        .style("cursor", "move");
+      legendG.call(d3.drag().on("drag", function(e) {
+        var ct = legendG.attr("transform");
+        var mx = 10, my = 50;
+        try {
+          var parts = ct.replace("translate(","").replace(")","").split(",");
+          mx = parseFloat(parts[0]); my = parseFloat(parts[1]);
+        } catch(err) {}
+        legendG.attr("transform", "translate(" + (mx + e.dx) + "," + (my + e.dy) + ")");
+      }));
+
+      function updateLegend() {
+        legendG.selectAll("*").remove();
+        var bgRect = legendG.append("rect").attr("rx", 4)
+          .attr("fill", "rgba(255,255,255,0.85)").attr("stroke", "#ddd").attr("stroke-width", 0.5);
+        legendG.append("text").text(capitalize(currentField))
+          .attr("x", 6).attr("y", 14)
+          .attr("font-size", "11px").attr("font-weight", "600").attr("fill", "#555")
+          .attr("font-family", "Inter, sans-serif");
+        var entries = Object.keys(colorMap).filter(function(k) { return k !== ""; }).sort();
+        entries.forEach(function(val, i) {
+          legendG.append("circle").attr("cx", 12).attr("cy", i * 18 + 32).attr("r", 5)
+            .attr("fill", colorMap[val]);
+          legendG.append("text").attr("x", 22).attr("y", i * 18 + 36)
+            .text(capitalize(val)).attr("font-size", "10px").attr("fill", "#333")
+            .attr("font-family", "Inter, sans-serif");
+        });
+        var bbox = legendG.node().getBBox();
+        bgRect.attr("x", bbox.x - 6).attr("y", bbox.y - 4)
+          .attr("width", bbox.width + 12).attr("height", bbox.height + 8);
+        bgRect.node().parentNode.insertBefore(bgRect.node(), bgRect.node().parentNode.firstChild);
+      }
+
+      function renderGraph(threshold) {
+        g.selectAll("*").remove();
+
+        var groups = buildGroups(threshold);
+        var superGraph = buildSuperGraph(groups);
+        var nodes = superGraph.nodes, edges = superGraph.edges;
+        computeLayout(superGraph);
+
+        var sim = d3.forceSimulation(nodes)
+          .force("link", d3.forceLink(edges).id(function(d) { return d.id; })
+            .distance(function(d) { return d.snps === 0 ? 40 : 50 + Math.log(d.snps + 1) * 40; })
+            .strength(0.4))
+          .force("charge", d3.forceManyBody().strength(-400))
+          .force("collision", d3.forceCollide(function(d) { return d._collisionR || (10 + Math.sqrt(d.count) * 10); }));
+
+        var link = g.append("g").selectAll("line").data(edges).enter().append("line")
+          .attr("stroke", "#999").attr("stroke-width", 2);
+
+        // Edge labels with hover showing bridge pair
+        var linkLabel = g.append("g").selectAll("text").data(edges).enter().append("text")
+          .text(function(d) { return d.snps; })
+          .attr("font-size", "11px").attr("fill", "#c0392b").attr("font-weight", "700")
+          .attr("text-anchor", "middle").attr("dy", -6)
+          .attr("font-family", "Inter, monospace")
+          .attr("paint-order", "stroke").attr("stroke", "#fafafa").attr("stroke-width", 3)
+          .style("cursor", "help")
+          .on("mouseover", function(e, d) {
+            var h = "<b>" + d.snps + "</b> distance";
+            if (d.bridgeFrom && d.bridgeTo) {
+              h += "<br><span style='color:#666'>Between:</span> " + d.bridgeFrom;
+              h += "<br><span style='color:#666'>And:</span> " + d.bridgeTo;
+            }
+            tooltip.html(h).style("display", "block");
+          }).on("mousemove", function(e) {
+            var rect = container.node().getBoundingClientRect();
+            tooltip.style("left", (e.clientX - rect.left + 14) + "px")
+                   .style("top", (e.clientY - rect.top - 12) + "px");
+          }).on("mouseout", function() { tooltip.style("display", "none"); });
+
+        var node = g.append("g").selectAll("g").data(nodes).enter().append("g")
+          .attr("class", "mst-node")
+          .style("cursor", "pointer")
+          .call(d3.drag()
+            .on("start", function(e, d) { sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+            .on("drag", function(e, d) { d.fx = e.x; d.fy = e.y; })
+            .on("end", function(e, d) { sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+        // Draw node visuals (pie chart or single circle)
+        function drawNodeVisual(d, el) {
+          el.selectAll(".node-visual").remove();
+          var r = nodeRadius(d);
+          if (d.count <= 1) {
+            el.append("circle").attr("class", "node-visual").attr("r", r)
+              .attr("fill", colorMap[getMemberColorValue(d.members[0], currentField)] || defaultColor)
+              .attr("stroke", "#fff").attr("stroke-width", 2).attr("opacity", 0.9);
+          } else {
+            var counts = {};
+            d.members.forEach(function(m) {
+              var c = colorMap[getMemberColorValue(m, currentField)] || defaultColor;
+              counts[c] = (counts[c] || 0) + 1;
+            });
+            var entries = Object.keys(counts);
+            if (entries.length <= 1) {
+              el.append("circle").attr("class", "node-visual").attr("r", r)
+                .attr("fill", entries[0] || defaultColor)
+                .attr("stroke", "#fff").attr("stroke-width", 2).attr("opacity", 0.9);
+            } else {
+              var total = d.count, startAngle = -Math.PI / 2;
+              entries.forEach(function(color) {
+                var sliceAngle = (counts[color] / total) * 2 * Math.PI;
+                var endAngle = startAngle + sliceAngle;
+                var x1 = r * Math.cos(startAngle), y1 = r * Math.sin(startAngle);
+                var x2 = r * Math.cos(endAngle), y2 = r * Math.sin(endAngle);
+                var largeArc = sliceAngle > Math.PI ? 1 : 0;
+                el.append("path").attr("class", "node-visual")
+                  .attr("d", "M0,0 L" + x1 + "," + y1 + " A" + r + "," + r + " 0 " + largeArc + ",1 " + x2 + "," + y2 + " Z")
+                  .attr("fill", color).attr("stroke", "#fff").attr("stroke-width", 1).attr("opacity", 0.9);
+                startAngle = endAngle;
+              });
+              el.append("circle").attr("class", "node-visual").attr("r", r)
+                .attr("fill", "none").attr("stroke", "#fff").attr("stroke-width", 2);
+            }
+          }
+        }
+
+        node.each(function(d) { drawNodeVisual(d, d3.select(this)); });
+
+        node.filter(function(d) { return d.count > 1; }).append("text")
+          .text(function(d) { return d.count; })
+          .attr("text-anchor", "middle").attr("dy", 5)
+          .attr("font-size", function(d) { return Math.min(16, 9 + Math.sqrt(d.count) * 1.5) + "px"; })
+          .attr("font-weight", "700").attr("fill", "#fff")
+          .attr("paint-order", "stroke").attr("stroke", "rgba(0,0,0,0.4)").attr("stroke-width", 3)
+          .attr("font-family", "Inter, sans-serif").style("pointer-events", "none")
+          .attr("class", "node-count-text");
+
+        node.append("text").text(function(d) { return d.label; })
+          .attr("dx", function(d) { return nodeRadius(d) + 4; }).attr("dy", 0)
+          .attr("font-size", "10px").attr("font-family", "Inter, sans-serif")
+          .attr("fill", "#333").attr("class", "node-label");
+
+        node.filter(function(d) { return d.count > 1; }).append("text")
+          .text(function(d) { return " " + d.countLabel; })
+          .attr("dx", function(d) { return nodeRadius(d) + 4; }).attr("dy", 12)
+          .attr("font-size", "9px").attr("font-family", "Inter, sans-serif")
+          .attr("fill", "#e15759").attr("font-weight", "600").attr("class", "node-count-label");
+
+        node.on("mouseover", function(e, d) {
+          var h = "";
+          if (d.count > 1) {
+            h = "<b>" + d.count + " identical isolates</b>";
+            if (d.st) h += "<br><span style='color:#4e79a7;font-weight:600'>MLST: " + d.st + "</span>";
+            if (d.amr) h += "<br><span style='color:#e15759'>Chromosomal AMR: " + d.amr + "</span>";
+            h += "<br><span style='color:#888;font-size:10px'>";
+            d.members.forEach(function(m, i) { h += (i > 0 ? ", " : "") + m.name; });
+            h += "</span>";
+          } else {
+            var m = d.members[0];
+            h = "<b>" + m.name + "</b>";
+            if (m.st) h += "<br><span style='color:#666'>MLST:</span> " + m.st;
+            if (m.amr) h += "<br><span style='color:#666'>Chromosomal AMR:</span> " + m.amr;
+            var mf = m.metaFields || {};
+            Object.keys(mf).forEach(function(k) {
+              if (mf[k]) h += "<br><span style='color:#666'>" + k + ":</span> " + mf[k];
+            });
+          }
+          tooltip.html(h).style("display", "block");
+        }).on("mousemove", function(e) {
+          var rect = container.node().getBoundingClientRect();
+          tooltip.style("left", (e.clientX - rect.left + 14) + "px")
+                 .style("top", (e.clientY - rect.top - 12) + "px");
+        }).on("mouseout", function() { tooltip.style("display", "none"); });
+
+        node.on("click", function(e, d) {
+          e.stopPropagation();
+          if (d.count <= 1) return;
+          var el = d3.select(this);
+          var expanded = el.classed("expanded");
+          if (expanded) {
+            el.classed("expanded", false);
+            el.selectAll(".burst-node").remove();
+            el.selectAll(".burst-line").remove();
+            el.selectAll(".burst-group").remove();
+            d._collisionR = null;
+            d._burstR = null;
+            d._sortedMembers = null;
+            d._rotAngle = null;
+            d.fx = null; d.fy = null;
+            sim.force("collision", d3.forceCollide(function(nd) { return nd._collisionR || (10 + Math.sqrt(nd.count) * 10); }));
+            sim.alpha(0.05).restart();
+            drawNodeVisual(d, el);
+            var ct = el.select(".node-count-text");
+            if (ct.node()) el.node().appendChild(ct.node());
+            el.select(".node-label").style("display", null);
+            el.select(".node-count-label").style("display", null);
+            el.select(".node-count-text").style("display", null);
+          } else {
+            el.classed("expanded", true);
+            var hubR = nodeRadius(d) * 0.5;
+            el.selectAll(".node-visual").remove();
+            el.append("circle").attr("class", "node-visual").attr("r", hubR)
+              .attr("fill", colorMap[getMemberColorValue(d.members[0], currentField)] || defaultColor)
+              .attr("stroke", "#fff").attr("stroke-width", 2).attr("opacity", 0.7);
+            el.select(".node-label").style("display", "none");
+            el.select(".node-count-label").style("display", "none");
+            el.select(".node-count-text").style("display", "none");
+
+            // Compute burst radius: account for neighbor positions and their burst radii
+            var baseR = 25 + d.count * 8;
+            var minNeighborDist = Infinity;
+            edges.forEach(function(edge) {
+              var other = null;
+              if (edge.source.id === d.id) other = edge.target;
+              else if (edge.target.id === d.id) other = edge.source;
+              if (other) {
+                var dx = (other.x || 0) - (d.x || 0);
+                var dy = (other.y || 0) - (d.y || 0);
+                var nd = Math.sqrt(dx * dx + dy * dy);
+                // Subtract neighbor's burst radius if it's expanded
+                var neighborBurstR = other._burstR || nodeRadius(other);
+                var available = nd - neighborBurstR - 10;
+                if (available < minNeighborDist) minNeighborDist = available;
+              }
+            });
+            // Also check all other nodes, not just edge-connected
+            nodes.forEach(function(other) {
+              if (other.id === d.id) return;
+              var dx = (other.x || 0) - (d.x || 0);
+              var dy = (other.y || 0) - (d.y || 0);
+              var nd = Math.sqrt(dx * dx + dy * dy);
+              var neighborR = other._burstR || nodeRadius(other);
+              var available = nd - neighborR - 10;
+              if (available < minNeighborDist) minNeighborDist = available;
+            });
+            // Burst radius should be less than half the distance to nearest neighbor
+            var maxBurstR = minNeighborDist < Infinity ? (minNeighborDist * 0.45) : baseR;
+            var burstR = Math.max(baseR, Math.min(maxBurstR, baseR * 1.5));
+
+            // Update collision radius - include label width estimate
+            var maxLabelLen = 0;
+            d.members.forEach(function(m) { if (m.name.length > maxLabelLen) maxLabelLen = m.name.length; });
+            var labelExtent = maxLabelLen * 6 + 16;
+            d._collisionR = burstR + labelExtent;
+            d._burstR = burstR;
+
+            // Pin this node and gently push overlapping neighbors away
+            d.fx = d.x; d.fy = d.y;
+            var expandedR = d._collisionR;
+            nodes.forEach(function(other) {
+              if (other.id === d.id) return;
+              var dx = (other.x || 0) - (d.x || 0);
+              var dy = (other.y || 0) - (d.y || 0);
+              var ndist = Math.sqrt(dx * dx + dy * dy);
+              var otherR = other._collisionR || (10 + Math.sqrt(other.count) * 10);
+              var minSep = expandedR + otherR + 10;
+              if (ndist < minSep && ndist > 0) {
+                var pushDist = minSep - ndist;
+                var angle = Math.atan2(dy, dx);
+                other.x += Math.cos(angle) * pushDist;
+                other.y += Math.sin(angle) * pushDist;
+                if (!other.fx) { other.vx = 0; other.vy = 0; }
+              }
+            });
+            // Update collision force without full reheat
+            sim.force("collision", d3.forceCollide(function(nd) { return nd._collisionR || (10 + Math.sqrt(nd.count) * 10); }));
+            sim.alpha(0.05).restart();
+
+            // Create a burst group that can be rotated
+            var burstGroup = el.append("g").attr("class", "burst-group");
+            var rotationAngle = 0;
+
+            // Hub sample for distance calc
+            var hubSampleId = d.members[0].id;
+
+            // Sort members by SNP distance from hub, then by name
+            var sortedMembers = d.members.slice().sort(function(a, b) {
+              var da = dist(hubSampleId, a.id), db = dist(hubSampleId, b.id);
+              if (da !== db) return da - db;
+              return a.name.localeCompare(b.name);
+            });
+            d._sortedMembers = sortedMembers;
+            d._rotAngle = 0;
+
+            sortedMembers.forEach(function(m, i) {
+              var angle = (2 * Math.PI * i / d.count) - Math.PI / 2;
+              var bx = burstR * Math.cos(angle), by = burstR * Math.sin(angle);
+              var px = hubR * Math.cos(angle), py = hubR * Math.sin(angle);
+
+              var rawDist = dist(hubSampleId, m.id);
+              var snpDist = isFinite(rawDist) ? Math.round(rawDist) : null;
+              var isZero = (snpDist === 0);
+
+              burstGroup.append("line").attr("class", "burst-line")
+                .attr("x1", px).attr("y1", py).attr("x2", bx).attr("y2", by)
+                .attr("stroke", isZero ? "#ddd" : "#f28e2b")
+                .attr("stroke-width", isZero ? 1 : 1.5)
+                .attr("stroke-dasharray", isZero ? "3,2" : "none");
+
+              if (!isZero) {
+                var mx = (px + bx) / 2, my = (py + by) / 2;
+                burstGroup.append("text").attr("class", "burst-line")
+                  .attr("x", mx).attr("y", my)
+                  .text(snpDist === null ? ">" + SNP_CAP : snpDist)
+                  .attr("font-size", "8px").attr("fill", "#e15759").attr("font-weight", "700")
+                  .attr("text-anchor", "middle").attr("dy", -3)
+                  .attr("font-family", "Inter, monospace")
+                  .attr("paint-order", "stroke").attr("stroke", "#fafafa").attr("stroke-width", 2)
+                  .style("pointer-events", "none");
+              }
+
+              var bg = burstGroup.append("g").attr("class", "burst-node")
+                .attr("transform", "translate(" + bx + "," + by + ")").datum(m);
+
+              bg.append("circle").attr("r", 6)
+                .attr("fill", colorMap[getMemberColorValue(m, currentField)] || defaultColor)
+                .attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+              // Label pointing outward radially - flip text on left side
+              var isLeft = (angle > Math.PI / 2 || angle < -Math.PI / 2);
+              bg.append("text").text(m.name)
+                .attr("dx", isLeft ? -10 : 10).attr("dy", 3)
+                .attr("text-anchor", isLeft ? "end" : "start")
+                .attr("font-size", "9px").attr("font-family", "Inter, sans-serif")
+                .attr("fill", "#4e79a7").attr("font-weight", "500")
+                .attr("class", "burst-label");
+
+              bg.on("mouseover", function(ev) {
+                var bh = "<b>" + m.name + "</b>";
+                if (m.st) bh += "<br><span style='color:#666'>MLST:</span> " + m.st;
+                if (m.amr) bh += "<br><span style='color:#666'>Chromosomal AMR:</span> " + m.amr;
+                var mf = m.metaFields || {};
+                Object.keys(mf).forEach(function(k) {
+                  if (mf[k]) bh += "<br><span style='color:#666'>" + k + ":</span> " + mf[k];
+                });
+                tooltip.html(bh).style("display", "block"); ev.stopPropagation();
+              }).on("mousemove", function(ev) {
+                var rect = container.node().getBoundingClientRect();
+                tooltip.style("left", (ev.clientX - rect.left + 14) + "px")
+                       .style("top", (ev.clientY - rect.top - 12) + "px");
+                ev.stopPropagation();
+              }).on("mouseout", function(ev) { tooltip.style("display", "none"); ev.stopPropagation(); });
+            });
+
+            // Drag on hub circle to rotate the entire burst.
+            var rotHandle = el.append("g").attr("class", "burst-line rot-handle")
+              .style("cursor", "grab");
+            rotHandle.append("circle")
+              .attr("cx", hubR + 8).attr("cy", 0).attr("r", 5)
+              .attr("fill", "#ddd").attr("stroke", "#999").attr("stroke-width", 1);
+            rotHandle.append("text")
+              .attr("x", hubR + 8).attr("y", 1)
+              .text("↻").attr("font-size", "8px").attr("text-anchor", "middle")
+              .attr("dominant-baseline", "central").attr("fill", "#666")
+              .style("pointer-events", "none");
+
+            rotHandle.call(d3.drag()
+              .on("start", function(ev) {
+                ev.sourceEvent.stopPropagation();
+                rotHandle.style("cursor", "grabbing");
+              })
+              .on("drag", function(ev) {
+                var dx = ev.x, dy = ev.y;
+                var newAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+                rotationAngle = newAngle;
+                d._rotAngle = newAngle;
+                burstGroup.attr("transform", "rotate(" + rotationAngle + ")");
+                burstGroup.selectAll(".burst-label")
+                  .attr("transform", "rotate(" + (-rotationAngle) + ")");
+                // Move rotate handle with rotation
+                rotHandle.attr("transform", "rotate(" + rotationAngle + ")");
+              })
+              .on("end", function() {
+                rotHandle.style("cursor", "grab");
+              }));
+
+          }
+        });
+
+        sim.on("tick", function() {
+          link.attr("x1", function(d) { return d.source.x; }).attr("y1", function(d) { return d.source.y; })
+              .attr("x2", function(d) { return d.target.x; }).attr("y2", function(d) { return d.target.y; });
+          linkLabel.attr("x", function(d) { return (d.source.x + d.target.x) / 2; })
+                   .attr("y", function(d) { return (d.source.y + d.target.y) / 2; });
+          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+
+        sim.on("end", function() {
+          var bounds = g.node().getBBox();
+          if (bounds.width === 0 || bounds.height === 0) return;
+          var pad = 60;
+          var scaleX = (width - pad * 2) / bounds.width;
+          var scaleY = (height - pad * 2) / bounds.height;
+          var scale = Math.min(scaleX, scaleY, 1.5);
+          var tx = (width - bounds.width * scale) / 2 - bounds.x * scale;
+          var ty = (height - bounds.height * scale) / 2 - bounds.y * scale;
+          svg.transition().duration(600)
+            .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+        });
+
+        // Store drawNodeVisual for recolor
+        return drawNodeVisual;
+      }
+
+      var currentDrawFn = null;
+
+      function fullRender(threshold) {
+        currentDrawFn = renderGraph(threshold);
+        updateLegend();
+        // renderGraph wipes g, so a highlighted isolate has to be re-marked.
+        if (typeof applySearchMarker === "function") applySearchMarker(false);
+      }
+
+      // Isolate search: nodes are groups, so find the sample first, then the group that contains it.
+      var lastSearchSample = null;
+      var searchInput = document.getElementById("@@EPIQ_div_id@@_search");
+      var searchStat = document.getElementById("@@EPIQ_div_id@@_searchstat");
+
+      function setSearchStat(msg, color) {
+        searchStat.textContent = msg;
+        searchStat.style.color = color || "#888";
+      }
+
+      // Sample names carry an assembly-type suffix (SAMPLE-05_L), so a bare isolate id should still
+      // match.
+      function resolveSample(q) {
+        q = (q || "").trim().toLowerCase();
+        if (!q) return null;
+        var prefix = null, sub = null;
+        for (var i = 0; i < allSamples.length; i++) {
+          var nm = (allSamples[i].name || "").toLowerCase();
+          if (nm === q) return allSamples[i];
+          if (!prefix && nm.indexOf(q) === 0) prefix = allSamples[i];
+          if (!sub && nm.indexOf(q) !== -1) sub = allSamples[i];
+        }
+        return prefix || sub;
+      }
+
+      function clearSearchMarker() { g.selectAll(".epiq-search-marker").remove(); }
+
+      function applySearchMarker(doFocus) {
+        clearSearchMarker();
+        if (lastSearchSample === null) return;
+        // buildSuperNodes stores members as sample OBJECTS, not indices, so this has to compare .id
+        // rather than using indexOf on the array.
+        var sel = g.selectAll("g.mst-node").filter(function(d) {
+          if (!d || !d.members) return false;
+          for (var mi = 0; mi < d.members.length; mi++) {
+            if (d.members[mi].id === lastSearchSample) return true;
+          }
+          return false;
+        });
+        if (sel.empty()) return;
+        var d = sel.datum();
+        var r = nodeRadius(d) + 9;
+
+        var m = sel.append("g").attr("class", "epiq-search-marker")
+                   .style("pointer-events", "none");
+        var ring = m.append("circle").attr("r", r).attr("fill", "none")
+          .attr("stroke", "#e15759").attr("stroke-width", 2.5).attr("opacity", 0.95);
+        // SMIL rather than a d3 transition so the pulse persists and survives the SVG download.
+        ring.append("animate").attr("attributeName", "r")
+          .attr("values", r + ";" + (r + 7) + ";" + r)
+          .attr("dur", "1.4s").attr("repeatCount", "indefinite");
+        ring.append("animate").attr("attributeName", "opacity")
+          .attr("values", "0.95;0.4;0.95")
+          .attr("dur", "1.4s").attr("repeatCount", "indefinite");
+        m.append("circle").attr("r", r + 11).attr("fill", "none")
+          .attr("stroke", "#e15759").attr("stroke-width", 1).attr("opacity", 0.45)
+          .attr("stroke-dasharray", "3 3");
+
+        if (doFocus) {
+          var k = 2.2;
+          svg.transition().duration(650).call(zoom.transform,
+            d3.zoomIdentity.translate(width / 2, height / 2).scale(k).translate(-d.x, -d.y));
+        }
+      }
+
+      function runSearch() {
+        var q = searchInput.value;
+        if (!q || !q.trim()) {
+          lastSearchSample = null; clearSearchMarker(); setSearchStat(""); return;
+        }
+        var hit = resolveSample(q);
+        if (!hit) {
+          lastSearchSample = null; clearSearchMarker();
+          setSearchStat("not found", "#e15759");
+          return;
+        }
+        lastSearchSample = hit.id;
+        setSearchStat(hit.name, "#59a14f");
+        applySearchMarker(true);
+      }
+
+      searchInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") { e.preventDefault(); runSearch(); }
+      });
+      searchInput.addEventListener("input", function() {
+        if (!this.value.trim()) { lastSearchSample = null; clearSearchMarker(); setSearchStat(""); }
+      });
+
+      fullRender(@@EPIQ_init_threshold@@);
+
+      var slider = document.getElementById("@@EPIQ_div_id@@_threshold");
+      var tvalEl = document.getElementById("@@EPIQ_div_id@@_tval");
+      slider.addEventListener("input", function() {
+        tvalEl.textContent = this.value;
+      });
+      slider.addEventListener("change", function() {
+        fullRender(parseInt(this.value));
+      });
+
+      selectEl.addEventListener("change", function() {
+        currentField = this.value;
+        colorMap = buildColorMap(currentField);
+        fullRender(parseInt(slider.value));
+      });
+
+      document.getElementById("@@EPIQ_div_id@@_zin").addEventListener("click", function() {
+        svg.transition().duration(300).call(zoom.scaleBy, 1.4);
+      });
+      document.getElementById("@@EPIQ_div_id@@_zout").addEventListener("click", function() {
+        svg.transition().duration(300).call(zoom.scaleBy, 0.7);
+      });
+      document.getElementById("@@EPIQ_div_id@@_zreset").addEventListener("click", function() {
+        var bounds = g.node().getBBox();
+        if (bounds.width === 0 || bounds.height === 0) {
+          svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+          return;
+        }
+        var pad = 60;
+        var scaleX = (width - pad * 2) / bounds.width;
+        var scaleY = (height - pad * 2) / bounds.height;
+        var scale = Math.min(scaleX, scaleY, 1.5);
+        var tx = (width - bounds.width * scale) / 2 - bounds.x * scale;
+        var ty = (height - bounds.height * scale) / 2 - bounds.y * scale;
+        svg.transition().duration(400)
+          .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+      });
+
+      // SVG download - hide UI elements before serialization
+      document.getElementById("@@EPIQ_div_id@@_dl").addEventListener("click", function() {
+        var svgEl = svg.node();
+        svgEl.querySelectorAll(".rot-handle").forEach(function(el) { el.style.display = "none"; });
+        var serializer = new XMLSerializer();
+        var source = serializer.serializeToString(svgEl);
+        svgEl.querySelectorAll(".rot-handle").forEach(function(el) { el.style.display = ""; });
+        var blob = new Blob([source], {type: "image/svg+xml;charset=utf-8"});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "@@EPIQ_cluster_name@@_mst.svg"; a.click();
+        URL.revokeObjectURL(url);
+      });
+    })();
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DISPLAY_NAME_PLACEHOLDER</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cgview@1.8.0/dist/cgview.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:#fafafa; }
+.map-outer { width:100%; position:relative; }
+.map-header { display:flex; align-items:flex-start; justify-content:space-between;
+  padding:10px 16px 6px; }
+.map-title-block { display:flex; flex-direction:column; gap:2px; }
+.map-title { font-size:13px; font-weight:600; color:#2d3436; letter-spacing:0.2px; }
+.map-amr { font-size:11px; color:#c0392b; font-weight:500; line-height:1.3; }
+.btn-row { display:flex; gap:6px; flex-shrink:0; align-items:center; margin-top:2px; }
+.dl-btn, .toggle-btn { background:#fff; border:1px solid #ddd; border-radius:6px;
+  padding:5px 10px; cursor:pointer; font-size:11px; color:#555; transition:all 0.15s;
+  display:flex; align-items:center; gap:4px; }
+.dl-btn:hover, .toggle-btn:hover { background:#f0f0f0; border-color:#bbb; color:#333; }
+.dl-btn svg { width:14px; height:14px; fill:currentColor; }
+.toggle-btn.active { background:#e8f4fd; border-color:#90caf9; color:#1976d2; }
+#cgv-container { width:100%; height:calc(100vh - 70px); min-height:600px;
+  background:#fafafa; position:relative; }
+.cgv-tooltip {
+  z-index: 9999 !important;
+  pointer-events: none !important;
+  max-width: 400px;
+  font-size: 12px !important;
+}
+#track-labels { position:absolute; bottom:14px; right:14px;
+  pointer-events:none; z-index:50; text-align:right; }
+.tl-heading { font-size:9px; font-weight:600; color:#999;
+  margin-bottom:2px; letter-spacing:0.4px; text-transform:uppercase; }
+.tl-item { font-size:10px; color:#555; line-height:1.4; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="map-outer">
+  <div class="map-header">
+    <div class="map-title-block">
+      <div class="map-title">DISPLAY_NAME_PLACEHOLDER</div>
+      <div class="map-amr" id="amr-subtitle"></div>
+    </div>
+    <div class="btn-row">
+      <button class="toggle-btn active" id="anno-toggle" onclick="toggleAnno()" title="Toggle Bakta annotation labels">Annotations</button>
+      <button class="toggle-btn active" id="amr-toggle" onclick="toggleAMR()" title="Toggle AMR gene labels">AMR</button>
+      <button class="dl-btn" onclick="downloadImage()" title="Download PNG">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="cgv-container"></div>
+  <div id="track-labels"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.0.1/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cgview@1.8.0/dist/cgview.min.js"></script>
+<script>
+var cgviewJSON = JSON_DATA_PLACEHOLDER;
+var displayName = "DISPLAY_NAME_PLACEHOLDER";
+var amrGenes = "AMR_GENES_PLACEHOLDER";
+
+if (amrGenes) {
+  document.getElementById("amr-subtitle").textContent = amrGenes;
+}
+
+var container = document.getElementById("cgv-container");
+var cw = container.offsetWidth || 1200;
+var ch = container.offsetHeight || 700;
+
+var cgv = new CGView.Viewer("#cgv-container", { width: cw, height: ch });
+cgv.io.loadJSON(cgviewJSON);
+
+cgv.zoomTo(0, 1, { duration: 0 });
+cgv.draw();
+
+window.addEventListener("resize", function() {
+  var w = container.offsetWidth;
+  var h = container.offsetHeight;
+  if (w > 0 && h > 0) { cgv.resize(w, h); cgv.draw(); }
+});
+
+// Toggle labels using CGView favorite system.
+var annoLabelsOn = true;
+var amrLabelsOn = true;
+
+// Collect feature references once after load
+var baktaFeatures = [];
+var amrFeatures = [];
+setTimeout(function() {
+  try {
+    var allFeats = cgv.features();
+    for (var i = 0; i < allFeats.length; i++) {
+      var f = allFeats[i];
+      var src = f.source || "";
+      if (src.indexOf("bakta") !== -1) {
+        baktaFeatures.push(f);
+      } else if (src.indexOf("amr") !== -1) {
+        amrFeatures.push(f);
+      }
+    }
+  } catch(e) { console.warn("Feature collection:", e); }
+}, 100);
+
+function toggleAnno() {
+  var btn = document.getElementById("anno-toggle");
+  annoLabelsOn = !annoLabelsOn;
+  btn.classList.toggle("active", annoLabelsOn);
+  for (var i = 0; i < baktaFeatures.length; i++) {
+    try { baktaFeatures[i].update({ favorite: annoLabelsOn }); } catch(e) {}
+  }
+  cgv.draw();
+}
+
+function toggleAMR() {
+  var btn = document.getElementById("amr-toggle");
+  amrLabelsOn = !amrLabelsOn;
+  btn.classList.toggle("active", amrLabelsOn);
+  for (var i = 0; i < amrFeatures.length; i++) {
+    try { amrFeatures[i].update({ favorite: amrLabelsOn }); } catch(e) {}
+  }
+  cgv.draw();
+}
+
+// Track labels panel - ordered from outermost to innermost
+setTimeout(function(){
+  try {
+    var tracks = cgv.tracks();
+    if (!tracks.length) return;
+
+    // Sort tracks by visual position: outside (reversed) -> both -> inside
+    var outside = [], both = [], inside = [];
+    for (var i = 0; i < tracks.length; i++) {
+      var pos = (tracks[i].position || "").toLowerCase();
+      var name = (tracks[i].name || "").replace(/\.fasta$/i, "");
+      if (pos === "inside") { inside.push(name); }
+      else if (pos === "both") { both.push(name); }
+      else { outside.push(name); }
+    }
+    // Outside: last in array = outermost visually, so reverse
+    outside.reverse();
+    var ordered = outside.concat(both).concat(inside);
+
+    var div = document.getElementById("track-labels");
+    var h = document.createElement("div");
+    h.className = "tl-heading";
+    h.textContent = "Tracks (outer to inner)";
+    div.appendChild(h);
+    for (var i = 0; i < ordered.length; i++) {
+      var item = document.createElement("div");
+      item.className = "tl-item";
+      item.textContent = ordered[i];
+      div.appendChild(item);
+    }
+  } catch(e) {}
+}, 300);
+
+function downloadImage() {
+  var w = cgv.width * 4;
+  var h = cgv.height * 4;
+  var filename = displayName.split(" ")[0].replace(/[^a-zA-Z0-9_-]/g, "_") + "_comparison_map.png";
+  cgv.io.downloadImage(w, h, filename);
+}
+
+(function() {
+  var cgvEl = document.getElementById('cgv-container');
+  var lastX = 0, lastY = 0;
+  cgvEl.addEventListener('mousemove', function(e) {
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+  setInterval(function() {
+    var tt = document.querySelector('.cgv-tooltip');
+    if (!tt || tt.style.display === 'none' || !tt.offsetParent) return;
+    var x = lastX + 12;
+    var y = lastY + 12;
+    var tw = tt.offsetWidth || 200;
+    var th = tt.offsetHeight || 50;
+    if (x + tw > window.innerWidth) x = lastX - tw - 8;
+    if (y + th > window.innerHeight) y = lastY - th - 8;
+    if (x < 0) x = 4;
+    if (y < 0) y = 4;
+    tt.style.position = 'fixed';
+    tt.style.left = x + 'px';
+    tt.style.top = y + 'px';
+    tt.style.transform = 'none';
+  }, 16);
+})();
+</script>
+</body>
+</html>

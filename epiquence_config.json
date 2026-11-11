@@ -1,0 +1,12 @@
+{
+  "pipeline_dir": ".",
+  "output_base": "/data/epiquence/results",
+  "reads_base": "/data/epiquence/reads",
+  "reads_sort": "modified",
+  "reads_sort_desc": true,
+  "reads_show_date": true,
+  "groups": {
+    "GP001": "Default Group"
+  },
+  "default_profile": "high_capacity"
+}

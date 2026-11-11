@@ -1,0 +1,24 @@
+# Environment-specific configs (local paths and settings)
+conf/env.config
+conf/env.*.config
+!conf/env.config.template
+directory_structure.md
+commands_store.md
+
+# Nextflow runtime
+.nextflow/
+.nextflow.log*
+work/
+results/
+
+# Python cache
+bin/__pycache__/
+bin/epiquence_lib/__pycache__/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Mac metadata
+.DS_Store
